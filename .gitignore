@@ -170,3 +170,4 @@ dist
 # Custom
 config.json
 uploads/
+build/
