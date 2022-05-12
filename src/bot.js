@@ -1,16 +1,18 @@
-const { Client, MessageAttachment } = require('discord.js')
-const { uploadImage } = require('./s3')
+import AWSService from './awsService'
+import Parser from './parser'
+const { Client } = require('discord.js')
 const config = require('../config.json')
 const { format } = require('date-fns')
-const { parser } = require('./parser')
 const client = new Client()
 const PREFIX = config.PREFIX
+
+const awsService = new AWSService()
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
 })
 
-client.on('message', (message) => {
+client.on('message', async (message) => {
   // If message is bot
   if (message.author.bot) return
 
@@ -26,28 +28,35 @@ client.on('message', (message) => {
 
     if (command === 'send') {
       const territory = args[0]
-      const warDate = format(new Date(), 'yyyy-MM-dd')
-      const s3Path = `${territory}-${warDate}`
-      let report
-      let images = []
-      message.channel.send(`Getting all the prints of the **${territory}** war from **${warDate}**`)
+      const dateWar = format(new Date(), 'yyyy-MM-dd')
+      const titleWar = `${territory}-${dateWar}`
+
+      // prepare
+
+      await awsService.init(titleWar)
+      const parser = new Parser(titleWar)
+      const images = []
+      message.channel.send(`Getting all the prints of the **${territory}** war from **${dateWar}**`)
+      // Get all prints
       message.channel.messages.fetch()
         .then(async (messages) => {
           await Promise.all(
             messages.map(async (message) => {
+              // Check if exist attachments (image)
               if (!message.author.bot && message.attachments.size > 0) {
                 message.react('🔍')
 
                 const attachs = message.attachments.toJSON()
-                images = await Promise.all(await attachs.map(async (att) => await uploadImage(s3Path, att)))
+                await Promise.all(await attachs.map(async (att) => images.push(await awsService.uploadPrint(titleWar, att))))
               }
             })
           )
-          report = await parser(s3Path, images)
+          const report = await parser.analyzeDocs(images)
           message.channel.send({
             content: 'Report of war',
             files: [
               {
+                name: `${titleWar}.csv`,
                 attachment: report
               }
             ]
