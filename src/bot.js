@@ -1,8 +1,9 @@
 import AWSService from './awsService'
 import Parser from './parser'
-const { Client } = require('discord.js')
-const config = require('../config.json')
-const { format } = require('date-fns')
+import { Client } from 'discord.js'
+import config from '../config.json'
+import { format } from 'date-fns'
+
 const client = new Client()
 const PREFIX = config.PREFIX
 

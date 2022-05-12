@@ -2,11 +2,11 @@
   "name": "newworld-analyzer-war",
   "version": "1.0.0",
   "description": "",
-  "main": "bot.js",
+  "main": "./build/bot.js",
   "scripts": {
-    "test": "$(npm bin)/babel-node ./src/test.js",
-    "start": "$(npm bin)/babel-node ./src/bot.js",
-    "build": "babel src -d build",
+    "start": "node ./build/bot.js",
+    "start:dev": "$(npm bin)/babel-node ./src/bot.js",
+    "build": "rm -rf ./build && babel ./src -d ./build",
     "lint": "$(npm bin)/eslint .",
     "lint:fix": "$(npm bin)/eslint . --fix"
   },
@@ -22,6 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-textract": "^3.85.0",
+    "@babel/polyfill": "^7.12.1",
     "aws-sdk": "^2.1130.0",
     "aws-textract-helper": "^1.0.0-beta.5",
     "date-fns": "^2.28.0",
@@ -41,12 +42,12 @@
     "eslint-plugin-promise": "^6.0.0",
     "standard": "^17.0.0",
     "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2",
     "webpack-node-externals": "^3.0.0"
   },
   "standard": {
     "ignore": [
-      "uploads/",
-      "build/"
+      "build/*"
     ]
   }
 }
